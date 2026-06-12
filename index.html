@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Middlanders Terminal</title>
+    
+    <script src="https://unpkg.com/@titaniumnetwork-dev/ultraviolet@3.2.4/dist/uv.bundle.js" defer></script>
+    <script src="/uv.config.js" defer></script>
+    <script src="https://unpkg.com/@mercuryworkshop/bare-mux@2.0.3/dist/index.js" defer></script>
+
+    <style>
+        :root { --bg: #121212; --panel: #1c1c1e; --accent: #0a84ff; --border: #333; --text: #f5f5f7; }
+        body { margin: 0; display: flex; height: 100vh; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
+        #login-overlay { position: fixed; top:0; left:0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .login-box { background: var(--panel); padding: 40px; border-radius: 16px; border: 1px solid var(--border); text-align: center; width: 320px; }
+        input { width: 90%; margin-bottom: 15px; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: #000; color: white; outline: none; }
+        input:focus { border-color: var(--accent); }
+        .btn { width: 100%; padding: 12px; background: var(--border); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 10px;}
+        .btn-accent { background: var(--accent); }
+        #sidebar { width: 340px; background: var(--panel); padding: 25px; display: flex; flex-direction: column; gap: 15px; border-right: 1px solid var(--border); overflow-y: auto; }
+        #browser-container { flex-grow: 1; border: none; background: #fff; }
+        hr { border: 0; border-top: 1px solid var(--border); width: 100%; margin: 10px 0; }
+        #file-list a { color: var(--accent); text-decoration: none; display: block; padding: 10px; border-radius: 6px; background: #000; margin-bottom: 8px; border: 1px solid var(--border);}
+    </style>
+</head>
+<body>
+
+    <div id="login-overlay">
+        <div class="login-box">
+            <h2 style="margin-top:0;">Middlanders Hub</h2>
+            <input type="text" id="host-url" placeholder="https://your-tunnel.trycloudflare.com">
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+            <button class="btn btn-accent" onclick="auth('login')">Login to Host</button>
+            <button class="btn" onclick="auth('register')">Create Profile</button>
+        </div>
+    </div>
+
+    <div id="sidebar">
+        <h3>Wisp Browser</h3>
+        <input type="text" id="url-input" placeholder="Search web or enter URL...">
+        <button class="btn btn-accent" id="go-btn">Browse</button>
+        <hr>
+        <h3>Host Seedbox</h3>
+        <input type="text" id="magnet-input" placeholder="Paste Magnet Link...">
+        <button class="btn" id="magnet-btn">Send to Host</button>
+        <hr>
+        <h3>Your Host Files</h3>
+        <div id="file-list"></div>
+        <button class="btn" id="refresh-btn">Refresh Storage</button>
+    </div>
+
+    <iframe id="browser-container" allow="cross-origin-isolated; pointer-lock; fullscreen; keyboard-map"></iframe>
+
+    <script>
+        let currentUserId = null;
+        let baseApiUrl = null;
+
+        async function auth(action) {
+            let hostInput = document.getElementById('host-url').value.trim().replace(/\/$/, "");
+            const user = document.getElementById('username').value.trim();
+            const pass = document.getElementById('password').value.trim();
+            
+            if (!hostInput || !user || !pass) return alert("Fill out all fields.");
+            if (!hostInput.startsWith('http')) hostInput = 'https://' + hostInput;
+            
+            baseApiUrl = hostInput;
+
+            try {
+                // Connects to your Cloudflared Backend
+                const res = await fetch(`${baseApiUrl}/api/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user, password: pass, action })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    currentUserId = user;
+                    document.getElementById('login-overlay').style.display = 'none';
+                    initProxy(baseApiUrl);
+                } else {
+                    alert(data.error);
+                }
+            } catch (err) {
+                alert("Failed to connect to Host URL. Is the Cloudflare tunnel running?");
+            }
+        }
+
+        async function initProxy(hostUrl) {
+            if ('serviceWorker' in navigator) {
+                await navigator.serviceWorker.register('/sw.js');
+            }
+            
+            // Convert the https:// tunnel URL into a wss:// wisp URL
+            const wssUrl = hostUrl.replace(/^http/, 'ws') + '/wisp/';
+            
+            const connection = new BareMux.BareMuxConnection();
+            await connection.setTransport('https://unpkg.com/@mercuryworkshop/epoxy-transport@2.0.1/dist/index.mjs', [{ wisp: wssUrl }]);
+        }
+
+        document.getElementById('go-btn').addEventListener('click', () => {
+            let input = document.getElementById('url-input').value.trim();
+            if (!input) return;
+            if (input.includes('.') && !input.includes(' ')) {
+                input = input.startsWith('http') ? input : 'https://' + input;
+            } else {
+                input = 'https://duckduckgo.com/?q=' + encodeURIComponent(input);
+            }
+            document.getElementById('browser-container').src = __uv$config.prefix + __uv$config.encodeUrl(input);
+        });
+
+        document.getElementById('magnet-btn').addEventListener('click', async () => {
+            const magnetLink = document.getElementById('magnet-input').value.trim();
+            await fetch(`${baseApiUrl}/api/download-magnet`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: currentUserId, magnetLink })
+            });
+            document.getElementById('magnet-input').value = "";
+            alert("Magnet sent to host!");
+        });
+
+        document.getElementById('refresh-btn').addEventListener('click', async () => {
+            const res = await fetch(`${baseApiUrl}/api/files/${currentUserId}`);
+            const files = await res.json();
+            const list = document.getElementById('file-list');
+            list.innerHTML = "";
+            files.forEach(file => {
+                const link = document.createElement('a');
+                // Uses the Cloudflare tunnel domain so you can download the file from anywhere!
+                link.href = `${baseApiUrl}/download-to-local/${currentUserId}/${file}`;
+                link.innerText = "⬇ " + file;
+                link.target = "_blank";
+                list.appendChild(link);
+            });
+        });
+    </script>
+</body>
+</html>
