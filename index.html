@@ -6,7 +6,7 @@
     <title>Middlanders Terminal</title>
     
     <script src="https://unpkg.com/@titaniumnetwork-dev/ultraviolet@3.2.4/dist/uv.bundle.js" defer></script>
-    <script src="/uv.config.js" defer></script>
+    <script src="./uv.config.js" defer></script> 
     <script src="https://unpkg.com/@mercuryworkshop/bare-mux@2.0.3/dist/index.js" defer></script>
 
     <style>
@@ -68,7 +68,6 @@
             baseApiUrl = hostInput;
 
             try {
-                // Connects to your Cloudflared Backend
                 const res = await fetch(`${baseApiUrl}/api/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -90,10 +89,10 @@
 
         async function initProxy(hostUrl) {
             if ('serviceWorker' in navigator) {
-                await navigator.serviceWorker.register('/sw.js');
+                // FIX 3: Make sw.js path relative for GitHub Pages
+                await navigator.serviceWorker.register('./sw.js');
             }
             
-            // Convert the https:// tunnel URL into a wss:// wisp URL
             const wssUrl = hostUrl.replace(/^http/, 'ws') + '/wisp/';
             
             const connection = new BareMux.BareMuxConnection();
@@ -108,7 +107,11 @@
             } else {
                 input = 'https://duckduckgo.com/?q=' + encodeURIComponent(input);
             }
-            document.getElementById('browser-container').src = __uv$config.prefix + __uv$config.encodeUrl(input);
+            
+            // Wait a fraction of a second to ensure BareMux transport is fully registered before injecting URL
+            setTimeout(() => {
+                document.getElementById('browser-container').src = __uv$config.prefix + __uv$config.encodeUrl(input);
+            }, 100);
         });
 
         document.getElementById('magnet-btn').addEventListener('click', async () => {
@@ -129,7 +132,6 @@
             list.innerHTML = "";
             files.forEach(file => {
                 const link = document.createElement('a');
-                // Uses the Cloudflare tunnel domain so you can download the file from anywhere!
                 link.href = `${baseApiUrl}/download-to-local/${currentUserId}/${file}`;
                 link.innerText = "⬇ " + file;
                 link.target = "_blank";
