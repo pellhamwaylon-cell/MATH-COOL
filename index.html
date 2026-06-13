@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Middlanders Hub</title>
     
-    <!-- FIX: Swapped to jsDelivr to bypass unpkg CORS blocks -->
     <script src="https://cdn.jsdelivr.net/npm/@titaniumnetwork-dev/ultraviolet@3.2.4/dist/uv.bundle.js" defer></script>
     <script src="./uv.config.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux@2.0.3/dist/index.js" defer></script>
@@ -89,7 +88,6 @@
         <div id="file-list"></div>
         <button class="btn" id="refresh-btn">Refresh Files</button>
         
-        <!-- Logout / Profile Wipe Button -->
         <button class="btn btn-danger" onclick="logout()">Logout & Secure Data</button>
     </div>
 
@@ -228,8 +226,8 @@
             const workerUrl = new URL('baremux-worker.js', window.location.href).href;
             const connection = new BareMux.BareMuxConnection(workerUrl);
             
-            // FIX: Swapped unpkg to jsDelivr
-            await connection.setTransport('https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@2.0.1/dist/index.mjs', [{ wisp: wssUrl }]);
+            // FIX: Using esm.sh specifically for ES Module compilation and Wasm routing
+            await connection.setTransport('https://esm.sh/@mercuryworkshop/epoxy-transport@2.0.1/dist/index.mjs', [{ wisp: wssUrl }]);
             
             createTab(); 
         }
