@@ -15,44 +15,56 @@
         
         /* Login Screen */
         #login-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-        .login-box { background: var(--panel); padding: 40px; border-radius: 12px; border: 1px solid var(--border); text-align: center; width: 340px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+        .login-box { background: var(--panel); padding: 40px; border-radius: 12px; border: 1px solid var(--border); text-align: center; width: 340px; }
         .login-box h2 { margin-top: 0; color: #fff; }
-        input[type="text"], input[type="password"] { width: 90%; margin-bottom: 15px; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: #000; color: white; outline: none; transition: border 0.2s; }
+        input { width: 90%; margin-bottom: 15px; padding: 12px; border-radius: 8px; border: 1px solid var(--border); background: #000; color: white; outline: none; }
         input:focus { border-color: var(--accent); }
-        
-        .checkbox-group { display: flex; justify-content: space-between; padding: 0 5%; margin-bottom: 20px; font-size: 0.85rem; color: var(--text-muted); text-align: left; }
-        .checkbox-group label { display: flex; align-items: center; gap: 5px; cursor: pointer; }
-
-        .btn { width: 100%; padding: 12px; background: var(--border); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 10px; transition: background 0.2s; }
+        .checkbox-group { display: flex; justify-content: space-between; padding: 0 5%; margin-bottom: 20px; font-size: 0.85rem; color: var(--text-muted); }
+        .btn { width: 100%; padding: 12px; background: var(--border); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 10px; transition: 0.2s; }
         .btn:hover { background: #3f3f46; }
         .btn-accent { background: var(--accent); }
         .btn-accent:hover { background: #005999; }
 
-        /* Main Workspace Layout */
-        #sidebar { width: 320px; background: var(--panel); padding: 25px; display: flex; flex-direction: column; gap: 15px; border-right: 1px solid var(--border); overflow-y: auto; flex-shrink: 0; }
+        /* Sidebar */
+        #sidebar { width: 320px; background: var(--panel); padding: 25px; display: flex; flex-direction: column; gap: 15px; border-right: 1px solid var(--border); flex-shrink: 0; }
         hr { border: 0; border-top: 1px solid var(--border); width: 100%; margin: 10px 0; }
         h3 { margin: 0; font-size: 1rem; color: #fff; display: flex; align-items: center; gap: 8px; }
-        h3::before { content: ""; display: block; width: 8px; height: 8px; background: var(--accent); border-radius: 50%; }
         
-        #file-list a { color: var(--text); text-decoration: none; display: block; padding: 10px; border-radius: 6px; background: #09090b; margin-bottom: 8px; border: 1px solid var(--border); font-size: 0.9rem; transition: border 0.2s; }
-        #file-list a:hover { border-color: var(--accent); }
-
-        /* Tabbed Browser Area */
-        #main-view { flex-grow: 1; display: flex; flex-direction: column; background: #fff; }
-        #tab-bar { display: flex; background: #202024; padding: 8px 8px 0 8px; gap: 5px; border-bottom: 1px solid var(--border); overflow-x: auto; }
+        /* Main UI */
+        #main-view { flex-grow: 1; display: flex; flex-direction: column; background: #121212; position: relative;}
         
-        .tab-btn { background: #000; color: var(--text-muted); border: 1px solid var(--border); border-bottom: none; padding: 8px 15px; border-radius: 8px 8px 0 0; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 0.85rem; max-width: 150px; white-space: nowrap; overflow: hidden; }
-        .tab-btn.active { background: #fff; color: #000; font-weight: bold; }
-        .tab-btn:hover:not(.active) { background: #27272a; }
-        .close-tab { cursor: pointer; width: 16px; height: 16px; display: flex; justify-content: center; align-items: center; border-radius: 50%; }
+        /* Tab Bar & Bookmarks */
+        #ui-header { background: #202024; border-bottom: 1px solid var(--border); }
+        #tab-bar { display: flex; padding: 8px 8px 0 8px; gap: 5px; overflow-x: auto; }
+        .tab-btn { background: #000; color: var(--text-muted); border: 1px solid var(--border); border-bottom: none; padding: 8px 15px; border-radius: 8px 8px 0 0; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 0.85rem; max-width: 150px; }
+        .tab-btn.active { background: #121212; color: #fff; font-weight: bold; }
+        .close-tab { cursor: pointer; border-radius: 50%; padding: 0 5px; }
         .close-tab:hover { background: rgba(255,0,0,0.2); color: red; }
-        
         #add-tab { background: transparent; border: none; color: var(--text); font-size: 1.2rem; cursor: pointer; padding: 0 10px; }
-        #add-tab:hover { color: var(--accent); }
+        
+        #bookmark-bar { display: flex; padding: 5px 15px; gap: 15px; background: #18181b; font-size: 0.8rem; border-top: 1px solid #27272a; overflow-x: auto;}
+        .bookmark-item { color: var(--text-muted); text-decoration: none; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+        .bookmark-item:hover { color: #fff; }
+        .add-bookmark { color: var(--accent); cursor: pointer; font-weight: bold;}
 
+        /* Browser & Home Screen */
         #browser-wrapper { flex-grow: 1; position: relative; }
         .proxy-iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; display: none; background: #fff; }
         .proxy-iframe.active { display: block; }
+        
+        /* Google-Style Home Screen */
+        #home-screen { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #121212; z-index: 10; display: none; }
+        #home-screen.active { display: flex; }
+        #home-screen h1 { font-size: 3rem; margin-bottom: 30px; letter-spacing: 2px; }
+        .search-container { width: 50%; max-width: 600px; position: relative; margin-bottom: 40px;}
+        .search-container input { width: 100%; padding: 15px 20px; border-radius: 25px; font-size: 1.1rem; box-sizing: border-box; }
+        
+        /* Shortcuts Grid */
+        .shortcuts-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; max-width: 500px; }
+        .shortcut { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; padding: 15px; border-radius: 12px; transition: 0.2s; text-decoration: none; color: var(--text); }
+        .shortcut:hover { background: #27272a; }
+        .shortcut-icon { width: 40px; height: 40px; background: #3f3f46; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; font-weight: bold;}
+        .shortcut span { font-size: 0.85rem; }
     </style>
 </head>
 <body>
@@ -63,22 +75,16 @@
             <input type="text" id="host-url" placeholder="https://your-tunnel.trycloudflare.com">
             <input type="text" id="username" placeholder="Username">
             <input type="password" id="password" placeholder="Password">
-            
             <div class="checkbox-group">
                 <label><input type="checkbox" id="remember-host"> Save Link</label>
                 <label><input type="checkbox" id="remember-me"> Save Login</label>
             </div>
-
             <button class="btn btn-accent" onclick="auth('login')">Login to Hub</button>
             <button class="btn" onclick="auth('register')">Create Profile</button>
         </div>
     </div>
 
     <div id="sidebar">
-        <h3>Wisp Navigator</h3>
-        <input type="text" id="url-input" placeholder="Search web or enter URL...">
-        <button class="btn btn-accent" id="go-btn">Browse in Active Tab</button>
-        <hr>
         <h3>Host Seedbox</h3>
         <input type="text" id="magnet-input" placeholder="Paste Magnet Link...">
         <button class="btn" id="magnet-btn">Push to Host PC</button>
@@ -89,23 +95,50 @@
     </div>
 
     <div id="main-view">
-        <div id="tab-bar">
-            <button id="add-tab" onclick="createTab()">+</button>
+        <div id="ui-header">
+            <div id="tab-bar">
+                <button id="add-tab" onclick="createTab()">+</button>
             </div>
+            <div id="bookmark-bar">
+                <span class="add-bookmark" onclick="addBookmark()">+ Add Bookmark</span>
+                <!-- Bookmarks inject here -->
+            </div>
+        </div>
+
         <div id="browser-wrapper">
+            <!-- Google-Style Home Screen -->
+            <div id="home-screen" class="active">
+                <h1>MIDDLANDERS</h1>
+                <div class="search-container">
+                    <input type="text" id="home-search" placeholder="Search the web or type a URL..." onkeypress="handleHomeSearch(event)">
+                </div>
+                <div class="shortcuts-grid" id="shortcuts-grid">
+                    <!-- Shortcuts inject here -->
+                </div>
             </div>
+            <!-- Iframes inject here -->
+        </div>
     </div>
 
     <script>
         let currentUserId = null;
         let baseApiUrl = null;
-        
-        // Tab Engine Variables
         let tabs = [];
         let tabCounter = 0;
         let activeTabId = null;
 
-        // --- 1. Load Saved Data on Startup ---
+        // Default Data
+        let bookmarks = JSON.parse(localStorage.getItem('hub_bookmarks')) || [
+            { name: "YouTube", url: "https://youtube.com" },
+            { name: "GitHub", url: "https://github.com" }
+        ];
+        let shortcuts = JSON.parse(localStorage.getItem('hub_shortcuts')) || [
+            { name: "Discord", url: "https://discord.com" },
+            { name: "Reddit", url: "https://reddit.com" },
+            { name: "Spotify", url: "https://open.spotify.com" },
+            { name: "Add", url: "add_shortcut" }
+        ];
+
         window.onload = () => {
             if(localStorage.getItem('hub_host')) {
                 document.getElementById('host-url').value = localStorage.getItem('hub_host');
@@ -116,9 +149,11 @@
                 document.getElementById('password').value = localStorage.getItem('hub_pass');
                 document.getElementById('remember-me').checked = true;
             }
+            renderBookmarks();
+            renderShortcuts();
         };
 
-        // --- 2. Authentication & Boot Sequence ---
+        // --- 1. Authentication & Boot Sequence ---
         async function auth(action) {
             let hostInput = document.getElementById('host-url').value.trim().replace(/\/$/, "");
             const user = document.getElementById('username').value.trim();
@@ -126,7 +161,6 @@
             
             if (!hostInput || !user || !pass) return alert("Fill out all fields.");
             if (!hostInput.startsWith('http')) hostInput = 'https://' + hostInput;
-            
             baseApiUrl = hostInput;
 
             try {
@@ -136,160 +170,164 @@
                     body: JSON.stringify({ username: user, password: pass, action })
                 });
 
-                const data = await res.json();
                 if (res.ok) {
                     currentUserId = user;
-                    
-                    // Save to local storage if checkboxes are ticked
-                    if (document.getElementById('remember-host').checked) {
-                        localStorage.setItem('hub_host', hostInput);
-                    } else {
-                        localStorage.removeItem('hub_host');
-                    }
-                    
+                    if (document.getElementById('remember-host').checked) localStorage.setItem('hub_host', hostInput);
                     if (document.getElementById('remember-me').checked) {
                         localStorage.setItem('hub_user', user);
                         localStorage.setItem('hub_pass', pass);
-                    } else {
-                        localStorage.removeItem('hub_user');
-                        localStorage.removeItem('hub_pass');
                     }
-
                     document.getElementById('login-overlay').style.display = 'none';
                     initProxy(baseApiUrl);
                 } else {
-                    alert(data.error);
+                    alert((await res.json()).error);
                 }
             } catch (err) {
-                alert("Failed to connect to Host URL. Is Cloudflared running?");
+                alert("Failed to connect to Host URL.");
             }
         }
 
         async function initProxy(hostUrl) {
             if ('serviceWorker' in navigator) {
                 await navigator.serviceWorker.register('./sw.js');
-                await navigator.serviceWorker.ready; // Wait for SW to wake up completely
+                await navigator.serviceWorker.ready; 
             }
-            
             const wssUrl = hostUrl.replace(/^http/, 'ws') + '/wisp/';
             
-            // NOTE: Must use the local worker bridge file here to prevent browser blocking!
-            const connection = new BareMux.BareMuxConnection('./baremux-worker.js');
+            // THE FIX: Dynamically build an absolute URL so BareMux stops crying about relative paths
+            const workerUrl = new URL('baremux-worker.js', window.location.href).href;
+            const connection = new BareMux.BareMuxConnection(workerUrl);
             await connection.setTransport('https://unpkg.com/@mercuryworkshop/epoxy-transport@2.0.1/dist/index.mjs', [{ wisp: wssUrl }]);
             
-            // Create the first blank tab once the proxy is ready
-            createTab('https://duckduckgo.com');
+            createTab(); // Creates the first empty Home Screen tab
         }
 
-        // --- 3. Tab Management System ---
+        // --- 2. Tab & Navigation System ---
         function createTab(initialUrl = '') {
             tabCounter++;
             const tabId = 'tab_' + tabCounter;
 
-            // Create Tab Button
             const tabBtn = document.createElement('div');
             tabBtn.className = 'tab-btn';
             tabBtn.id = 'btn_' + tabId;
             tabBtn.innerHTML = `Tab ${tabCounter} <div class="close-tab" onclick="closeTab('${tabId}', event)">×</div>`;
             tabBtn.onclick = () => switchTab(tabId);
 
-            // Create Iframe Sandbox
             const iframe = document.createElement('iframe');
             iframe.id = 'iframe_' + tabId;
             iframe.className = 'proxy-iframe';
-            // Ignored pointer-lock warning is standard, do not worry about it in console.
             iframe.allow = "cross-origin-isolated; fullscreen; keyboard-map"; 
             
-            if(initialUrl) {
-                iframe.src = __uv$config.prefix + __uv$config.encodeUrl(initialUrl);
-            }
-
-            // Insert into DOM before the + button
-            const tabBar = document.getElementById('tab-bar');
-            tabBar.insertBefore(tabBtn, document.getElementById('add-tab'));
+            document.getElementById('tab-bar').insertBefore(tabBtn, document.getElementById('add-tab'));
             document.getElementById('browser-wrapper').appendChild(iframe);
 
-            tabs.push({ id: tabId, btn: tabBtn, iframe: iframe });
+            tabs.push({ id: tabId, btn: tabBtn, iframe: iframe, currentUrl: initialUrl });
             switchTab(tabId);
+            
+            if(initialUrl) navigateActiveTab(initialUrl);
         }
 
         function switchTab(tabId) {
             activeTabId = tabId;
+            const activeTabData = tabs.find(t => t.id === tabId);
+            
             tabs.forEach(t => {
-                if(t.id === tabId) {
-                    t.btn.classList.add('active');
-                    t.iframe.classList.add('active');
-                } else {
-                    t.btn.classList.remove('active');
-                    t.iframe.classList.remove('active');
-                }
+                t.btn.classList.toggle('active', t.id === tabId);
+                t.iframe.classList.toggle('active', t.id === tabId && t.currentUrl !== '');
             });
+
+            // If the active tab has no URL, show the Home Screen. Otherwise hide it.
+            document.getElementById('home-screen').classList.toggle('active', activeTabData.currentUrl === '');
+            document.getElementById('home-search').focus();
         }
 
         function closeTab(tabId, event) {
-            event.stopPropagation(); // Prevent triggering switchTab
+            event.stopPropagation();
             const tabIndex = tabs.findIndex(t => t.id === tabId);
             if (tabIndex === -1) return;
 
-            // Remove from DOM
             tabs[tabIndex].btn.remove();
             tabs[tabIndex].iframe.remove();
             tabs.splice(tabIndex, 1);
 
-            // Switch to another tab if the active one was closed
-            if (tabs.length > 0 && activeTabId === tabId) {
-                switchTab(tabs[tabs.length - 1].id);
-            } else if (tabs.length === 0) {
-                activeTabId = null;
+            if (tabs.length > 0 && activeTabId === tabId) switchTab(tabs[tabs.length - 1].id);
+            else if (tabs.length === 0) activeTabId = null;
+        }
+
+        function handleHomeSearch(e) {
+            if (e.key === 'Enter') {
+                navigateActiveTab(e.target.value);
+                e.target.value = '';
             }
         }
 
-        // --- 4. Sidebar Controls ---
-        document.getElementById('go-btn').addEventListener('click', () => {
-            let input = document.getElementById('url-input').value.trim();
-            if (!input) return;
-            
+        function navigateActiveTab(input) {
+            if (!activeTabId) createTab(input);
+            input = input.trim();
             if (input.includes('.') && !input.includes(' ')) {
                 input = input.startsWith('http') ? input : 'https://' + input;
             } else {
                 input = 'https://duckduckgo.com/?q=' + encodeURIComponent(input);
             }
             
-            // If no tabs exist, create one. Otherwise update the active one.
-            if (!activeTabId) {
-                createTab(input);
-            } else {
-                const activeIframe = document.getElementById('iframe_' + activeTabId);
-                activeIframe.src = __uv$config.prefix + __uv$config.encodeUrl(input);
+            const activeTabData = tabs.find(t => t.id === activeTabId);
+            activeTabData.currentUrl = input;
+            activeTabData.iframe.src = __uv$config.prefix + __uv$config.encodeUrl(input);
+            
+            switchTab(activeTabId); // Triggers the UI to hide home screen and show iframe
+        }
+
+        // --- 3. Bookmarks & Shortcuts System ---
+        function renderBookmarks() {
+            const bar = document.getElementById('bookmark-bar');
+            // Keep the "+ Add" button, remove the rest
+            bar.innerHTML = '<span class="add-bookmark" onclick="addBookmark()">+ Add Bookmark</span>';
+            bookmarks.forEach(b => {
+                const el = document.createElement('a');
+                el.className = 'bookmark-item';
+                el.innerHTML = `★ ${b.name}`;
+                el.onclick = () => navigateActiveTab(b.url);
+                bar.appendChild(el);
+            });
+        }
+
+        function renderShortcuts() {
+            const grid = document.getElementById('shortcuts-grid');
+            grid.innerHTML = '';
+            shortcuts.forEach(s => {
+                const el = document.createElement('div');
+                el.className = 'shortcut';
+                if (s.url === 'add_shortcut') {
+                    el.innerHTML = `<div class="shortcut-icon">+</div><span>Add Shortcut</span>`;
+                    el.onclick = addShortcut;
+                } else {
+                    el.innerHTML = `<div class="shortcut-icon">${s.name.charAt(0).toUpperCase()}</div><span>${s.name}</span>`;
+                    el.onclick = () => navigateActiveTab(s.url);
+                }
+                grid.appendChild(el);
+            });
+        }
+
+        function addBookmark() {
+            const name = prompt("Enter Bookmark Name:");
+            const url = prompt("Enter Bookmark URL:");
+            if (name && url) {
+                bookmarks.push({ name, url });
+                localStorage.setItem('hub_bookmarks', JSON.stringify(bookmarks));
+                renderBookmarks();
             }
-            document.getElementById('url-input').value = ""; // Clear input
-        });
+        }
 
-        document.getElementById('magnet-btn').addEventListener('click', async () => {
-            const magnetLink = document.getElementById('magnet-input').value.trim();
-            if(!magnetLink) return;
-            await fetch(`${baseApiUrl}/api/download-magnet`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: currentUserId, magnetLink })
-            });
-            document.getElementById('magnet-input').value = "";
-            alert("Magnet sent to Host PC queue.");
-        });
-
-        document.getElementById('refresh-btn').addEventListener('click', async () => {
-            const res = await fetch(`${baseApiUrl}/api/files/${currentUserId}`);
-            const files = await res.json();
-            const list = document.getElementById('file-list');
-            list.innerHTML = "";
-            files.forEach(file => {
-                const link = document.createElement('a');
-                link.href = `${baseApiUrl}/download-to-local/${currentUserId}/${file}`;
-                link.innerText = "⬇ " + file;
-                link.target = "_blank";
-                list.appendChild(link);
-            });
-        });
+        function addShortcut() {
+            const name = prompt("Enter Shortcut Name:");
+            const url = prompt("Enter Shortcut URL:");
+            if (name && url) {
+                // Insert right before the "Add Shortcut" button
+                shortcuts.splice(shortcuts.length - 1, 0, { name, url });
+                localStorage.setItem('hub_shortcuts', JSON.stringify(shortcuts));
+                renderShortcuts();
+            }
+        }
     </script>
 </body>
 </html>
