@@ -1,6 +1,6 @@
-importScripts('https://unpkg.com/@titaniumnetwork-dev/ultraviolet@3.2.4/dist/uv.bundle.js');
-importScripts('./uv.config.js'); // Added dot here
-importScripts('https://unpkg.com/@titaniumnetwork-dev/ultraviolet@3.2.4/dist/uv.sw.js');
+importScripts('https://cdn.jsdelivr.net/npm/@titaniumnetwork-dev/ultraviolet@3.2.4/dist/uv.bundle.js');
+importScripts('./uv.config.js');
+importScripts('https://cdn.jsdelivr.net/npm/@titaniumnetwork-dev/ultraviolet@3.2.4/dist/uv.sw.js');
 
 const sw = new UVServiceWorker();
 self.addEventListener('fetch', event => {
