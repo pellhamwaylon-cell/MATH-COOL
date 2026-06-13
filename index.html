@@ -5,15 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Middlanders Hub</title>
     
-    <script src="https://unpkg.com/@titaniumnetwork-dev/ultraviolet@3.2.4/dist/uv.bundle.js" defer></script>
+    <!-- FIX: Swapped to jsDelivr to bypass unpkg CORS blocks -->
+    <script src="https://cdn.jsdelivr.net/npm/@titaniumnetwork-dev/ultraviolet@3.2.4/dist/uv.bundle.js" defer></script>
     <script src="./uv.config.js" defer></script>
-    <script src="https://unpkg.com/@mercuryworkshop/bare-mux@2.0.3/dist/index.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mercuryworkshop/bare-mux@2.0.3/dist/index.js" defer></script>
 
     <style>
         :root { --bg: #0f0f11; --panel: #18181b; --accent: #007acc; --border: #27272a; --text: #e4e4e7; --text-muted: #a1a1aa; }
         body { margin: 0; display: flex; height: 100vh; font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
         
-        /* Login Screen */
         #login-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); display: flex; justify-content: center; align-items: center; z-index: 1000; }
         .login-box { background: var(--panel); padding: 40px; border-radius: 12px; border: 1px solid var(--border); text-align: center; width: 340px; }
         .login-box h2 { margin-top: 0; color: #fff; }
@@ -24,16 +24,15 @@
         .btn:hover { background: #3f3f46; }
         .btn-accent { background: var(--accent); }
         .btn-accent:hover { background: #005999; }
+        .btn-danger { background: #990000; margin-top: auto; }
+        .btn-danger:hover { background: #cc0000; }
 
-        /* Sidebar */
         #sidebar { width: 320px; background: var(--panel); padding: 25px; display: flex; flex-direction: column; gap: 15px; border-right: 1px solid var(--border); flex-shrink: 0; }
         hr { border: 0; border-top: 1px solid var(--border); width: 100%; margin: 10px 0; }
         h3 { margin: 0; font-size: 1rem; color: #fff; display: flex; align-items: center; gap: 8px; }
         
-        /* Main UI */
         #main-view { flex-grow: 1; display: flex; flex-direction: column; background: #121212; position: relative;}
         
-        /* Tab Bar & Bookmarks */
         #ui-header { background: #202024; border-bottom: 1px solid var(--border); }
         #tab-bar { display: flex; padding: 8px 8px 0 8px; gap: 5px; overflow-x: auto; }
         .tab-btn { background: #000; color: var(--text-muted); border: 1px solid var(--border); border-bottom: none; padding: 8px 15px; border-radius: 8px 8px 0 0; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 0.85rem; max-width: 150px; }
@@ -47,19 +46,16 @@
         .bookmark-item:hover { color: #fff; }
         .add-bookmark { color: var(--accent); cursor: pointer; font-weight: bold;}
 
-        /* Browser & Home Screen */
         #browser-wrapper { flex-grow: 1; position: relative; }
         .proxy-iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; display: none; background: #fff; }
         .proxy-iframe.active { display: block; }
         
-        /* Google-Style Home Screen */
         #home-screen { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #121212; z-index: 10; display: none; }
         #home-screen.active { display: flex; }
         #home-screen h1 { font-size: 3rem; margin-bottom: 30px; letter-spacing: 2px; }
         .search-container { width: 50%; max-width: 600px; position: relative; margin-bottom: 40px;}
         .search-container input { width: 100%; padding: 15px 20px; border-radius: 25px; font-size: 1.1rem; box-sizing: border-box; }
         
-        /* Shortcuts Grid */
         .shortcuts-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; max-width: 500px; }
         .shortcut { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; padding: 15px; border-radius: 12px; transition: 0.2s; text-decoration: none; color: var(--text); }
         .shortcut:hover { background: #27272a; }
@@ -92,6 +88,9 @@
         <h3>Host Storage</h3>
         <div id="file-list"></div>
         <button class="btn" id="refresh-btn">Refresh Files</button>
+        
+        <!-- Logout / Profile Wipe Button -->
+        <button class="btn btn-danger" onclick="logout()">Logout & Secure Data</button>
     </div>
 
     <div id="main-view">
@@ -101,22 +100,17 @@
             </div>
             <div id="bookmark-bar">
                 <span class="add-bookmark" onclick="addBookmark()">+ Add Bookmark</span>
-                <!-- Bookmarks inject here -->
             </div>
         </div>
 
         <div id="browser-wrapper">
-            <!-- Google-Style Home Screen -->
             <div id="home-screen" class="active">
                 <h1>MIDDLANDERS</h1>
                 <div class="search-container">
                     <input type="text" id="home-search" placeholder="Search the web or type a URL..." onkeypress="handleHomeSearch(event)">
                 </div>
-                <div class="shortcuts-grid" id="shortcuts-grid">
-                    <!-- Shortcuts inject here -->
-                </div>
+                <div class="shortcuts-grid" id="shortcuts-grid"></div>
             </div>
-            <!-- Iframes inject here -->
         </div>
     </div>
 
@@ -153,7 +147,43 @@
             renderShortcuts();
         };
 
-        // --- 1. Authentication & Boot Sequence ---
+        // --- 1. USER ISOLATION ENGINE ---
+        // Backs up the browser's IndexedDB (where UV stores logins) to local storage under the user's name
+        function isolateProfileData(username, action) {
+            return new Promise((resolve) => {
+                const req = indexedDB.open('uv-storage');
+                req.onsuccess = (e) => {
+                    const db = e.target.result;
+                    if (action === 'backup') {
+                        try {
+                            const tx = db.transaction('uv-cookies', 'readonly');
+                            const store = tx.objectStore('uv-cookies');
+                            const allReq = store.getAll();
+                            allReq.onsuccess = () => {
+                                localStorage.setItem(`hub_idb_${username}`, JSON.stringify(allReq.result));
+                                resolve();
+                            };
+                        } catch(err) { resolve(); } // Fails silently if fresh DB
+                    } else if (action === 'wipe') {
+                        db.close();
+                        indexedDB.deleteDatabase('uv-storage');
+                        resolve();
+                    }
+                };
+                req.onerror = () => resolve();
+            });
+        }
+
+        async function logout() {
+            if (currentUserId) {
+                // Save specific user data, then wipe the active database so the next user can't see it
+                await isolateProfileData(currentUserId, 'backup');
+                await isolateProfileData(null, 'wipe');
+            }
+            window.location.reload();
+        }
+
+        // --- 2. AUTHENTICATION & BOOT ---
         async function auth(action) {
             let hostInput = document.getElementById('host-url').value.trim().replace(/\/$/, "");
             const user = document.getElementById('username').value.trim();
@@ -177,6 +207,7 @@
                         localStorage.setItem('hub_user', user);
                         localStorage.setItem('hub_pass', pass);
                     }
+                    
                     document.getElementById('login-overlay').style.display = 'none';
                     initProxy(baseApiUrl);
                 } else {
@@ -194,15 +225,21 @@
             }
             const wssUrl = hostUrl.replace(/^http/, 'ws') + '/wisp/';
             
-            // THE FIX: Dynamically build an absolute URL so BareMux stops crying about relative paths
             const workerUrl = new URL('baremux-worker.js', window.location.href).href;
             const connection = new BareMux.BareMuxConnection(workerUrl);
-            await connection.setTransport('https://unpkg.com/@mercuryworkshop/epoxy-transport@2.0.1/dist/index.mjs', [{ wisp: wssUrl }]);
             
-            createTab(); // Creates the first empty Home Screen tab
+            // FIX: Swapped unpkg to jsDelivr
+            await connection.setTransport('https://cdn.jsdelivr.net/npm/@mercuryworkshop/epoxy-transport@2.0.1/dist/index.mjs', [{ wisp: wssUrl }]);
+            
+            createTab(); 
         }
 
-        // --- 2. Tab & Navigation System ---
+        // Save profile data every 30 seconds to ensure logins aren't lost
+        setInterval(() => {
+            if (currentUserId) isolateProfileData(currentUserId, 'backup');
+        }, 30000);
+
+        // --- 3. TAB & NAVIGATION SYSTEM ---
         function createTab(initialUrl = '') {
             tabCounter++;
             const tabId = 'tab_' + tabCounter;
@@ -236,7 +273,6 @@
                 t.iframe.classList.toggle('active', t.id === tabId && t.currentUrl !== '');
             });
 
-            // If the active tab has no URL, show the Home Screen. Otherwise hide it.
             document.getElementById('home-screen').classList.toggle('active', activeTabData.currentUrl === '');
             document.getElementById('home-search').focus();
         }
@@ -274,13 +310,12 @@
             activeTabData.currentUrl = input;
             activeTabData.iframe.src = __uv$config.prefix + __uv$config.encodeUrl(input);
             
-            switchTab(activeTabId); // Triggers the UI to hide home screen and show iframe
+            switchTab(activeTabId);
         }
 
-        // --- 3. Bookmarks & Shortcuts System ---
+        // --- 4. BOOKMARKS & SHORTCUTS ---
         function renderBookmarks() {
             const bar = document.getElementById('bookmark-bar');
-            // Keep the "+ Add" button, remove the rest
             bar.innerHTML = '<span class="add-bookmark" onclick="addBookmark()">+ Add Bookmark</span>';
             bookmarks.forEach(b => {
                 const el = document.createElement('a');
@@ -322,7 +357,6 @@
             const name = prompt("Enter Shortcut Name:");
             const url = prompt("Enter Shortcut URL:");
             if (name && url) {
-                // Insert right before the "Add Shortcut" button
                 shortcuts.splice(shortcuts.length - 1, 0, { name, url });
                 localStorage.setItem('hub_shortcuts', JSON.stringify(shortcuts));
                 renderShortcuts();
